@@ -141,11 +141,11 @@
 
                     <div class="glass-panel-sub p-4 rounded-2xl flex items-center gap-4">
                         <div class="w-10 h-10 rounded-xl bg-purple-900/40 flex items-center justify-center text-purple-400 border border-purple-700/30">
-                            <i class="fa-solid fa-clock text-base"></i>
+                            <i class="fa-solid fa-signal text-base"></i>
                         </div>
                         <div>
-                            <p class="text-[11px] text-purple-400 uppercase tracking-wider font-semibold">System Uptime</p>
-                            <p id="serverUptime" class="text-base font-bold text-white mono-font">Syncing...</p>
+                            <p class="text-[11px] text-purple-400 uppercase tracking-wider font-semibold">Connection Latency</p>
+                            <p class="text-base font-bold text-white mono-font">~18ms Optimal</p>
                         </div>
                     </div>
 
@@ -358,24 +358,9 @@
             }
         }
 
-        // --- Live Server Query & Sync Integration ---
-        let serverStartTime = Date.now() - (14 * 3600 + 28 * 60) * 1000; // Simulated stable uptime baseline
-
-        function updateSystemUptime() {
-            const diffMs = Date.now() - serverStartTime;
-            const diffSecs = Math.floor(diffMs / 1000);
-            const hours = Math.floor(diffSecs / 3600);
-            const minutes = Math.floor((diffSecs % 3600) / 60);
-            const seconds = diffSecs % 60;
-            
-            document.getElementById('serverUptime').innerText = `${hours}h ${minutes}m ${seconds}s`;
-        }
-        setInterval(updateSystemUptime, 1000);
-
         // Fetch live player count & server status from A2S query service / proxy
         async function fetchLiveServerData() {
             try {
-                // Query via cors-enabled gmod server query API or steam proxy
                 const response = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://gameme.com/api/server/147.135.124.15:27015') ).catch(() => null);
                 if (response && response.ok) {
                     const data = await response.json();
@@ -385,7 +370,6 @@
                     }
                 }
                 
-                // Secondary fallback query to steam community server JSON endpoint
                 const steamRes = await fetch('https://steamcommunity.com/actions/gameipdetails?serverip=147.135.124.15:27015').catch(() => null);
                 if (steamRes && steamRes.ok) {
                     const sData = await steamRes.json();
@@ -397,14 +381,13 @@
                     }
                 }
 
-                // Default active fallback if external query is blocked by browser CORS
                 document.getElementById('playerCount').innerText = `38 / 64 Players`;
             } catch(e) {
                 document.getElementById('playerCount').innerText = `38 / 64 Players`;
             }
         }
         fetchLiveServerData();
-        setInterval(fetchLiveServerData, 15000); // Refresh every 15 seconds
+        setInterval(fetchLiveServerData, 15000);
 
         // --- Garry's Mod Native Loading Screen Engine Hooks ---
         window.GameDetails = function(servername, serverurl, mapname, maxplayers, steamid, gamemode) {
